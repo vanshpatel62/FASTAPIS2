@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Union
 from app.database import engine
 from app.models import Base
-# git hub
+
 app=FastAPI()
 
 # Base.metadata.create_all(bind=engine)
