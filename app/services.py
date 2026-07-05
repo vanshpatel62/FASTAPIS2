@@ -8,7 +8,7 @@ from sqlalchemy import text
 #     data = gd.model_dump()
 #     customer_ins=Customres(data)
 
-
+# 
 def create_customre(db: Session, data: customer_data):
     customer_ins = Customer(**data.model_dump())
     db.add(customer_ins)
