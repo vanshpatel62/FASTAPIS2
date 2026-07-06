@@ -2,7 +2,7 @@ from fastapi import FastAPI,HTTPException,Depends,Request
 # from fastapi.responses import HTMLResponse
 # from fastapi.staticfiles import StaticFiles
 # from fastapi.templating import Jinja2Templates
-from app import services,schemas
+from app import services,schemas,models
 from app.database import get_db,engine
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -31,15 +31,40 @@ def search_cust(cust_id:int,db:Session=Depends(get_db)):
 def create_cust(cust:schemas.add_customre,db:Session=Depends(get_db)):
     return services.create_customre(db,cust)
 
+@app.put("/cust/{cust_id}",response_model=schemas.customer_data)
+def update_cust(cust:schemas.customer_data,cust_id:int,db:Session=Depends(get_db)):
+    cust_update=services.update_cust(cust_id,cust,db)
+    if not cust_update:
+        raise HTTPException(status_code=404,detail="Book Not Found")
+    return cust_update
+
+
+
 
 @app.get("/products",response_model=list[schemas.produsts_data])
 def get_produsts(db:Session=Depends(get_db)):
     return services.get_product(db)
 
+@app.get("/produsts/{product_id}",response_model=list[schemas.produsts_data])
+def search_product(product_id:int,db:Session=Depends(get_db)):
+    return services.search_product(product_id,db)
+
+
+
 
 @app.get("/orders",response_model=list[schemas.orders_data])
 def get_orders(db:Session=Depends(get_db)):
     return services.get_order(db)
+
+@app.get("/orders/{ord_id}",response_model=list[schemas.orders_data])
+def search_orders_by_ord_id(ord_id: int,db: Session = Depends(get_db)):
+    return services.search_order_by_order_id(ord_id,db)
+
+@app.get("/orders_by_cust_id/{cust_id}",response_model=list[schemas.orders_data])
+def search_orders_by_cust_id(cust_id: int,db: Session = Depends(get_db)):
+    return services.search_order_by_cust_id(cust_id,db)
+
+
 
 @app.get("/order_items",response_model=list[schemas.order_item])
 def get_order_items(db:Session=Depends(get_db)):

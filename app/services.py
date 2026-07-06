@@ -7,11 +7,7 @@ from app import schemas
 from app.schemas import customer_data
 from sqlalchemy import text
 
-# def create_customre(db:Session,gd:customer_data):
-#     data = gd.model_dump()
-#     customer_ins=Customres(data)
 
-# 
 def create_customre(db: Session, data: schemas.add_customre):
     customer_ins = Customer(**data.model_dump())
     db.add(customer_ins)
@@ -24,12 +20,22 @@ def get_customre(db:Session):
 
 # search cutomer
 def search_customer(cust_id:int,db:Session):
-    cust_details=db.query(Customer).filter_by(cust_id=cust_id).first()
+    cust_details=db.query(Customer).filter_by(cust_id=cust_id).all()
 
     if(cust_details):
         return cust_details
     else:
         raise HTTPException(status_code=404,detail="Customer Not Found")
+
+# For update
+def update_cust(cust_id:int,cust:schemas.customer_data,db:Session):
+    find_cust=db.query(Customer).filter_by(cust_id=cust_id).first()
+    if find_cust:
+        for key,value in cust.model_dump().items():
+            setattr(find_cust,key,value)
+        db.commit()
+        db.refresh(find_cust)
+    return find_cust
 
 
 def get_product(db:Session):
@@ -37,11 +43,38 @@ def get_product(db:Session):
     return result.fetchall()
     # return db.query(Product).all()
 
+
+def search_product(p_id:int,db:Session):
+    product_details=db.query(Product).filter_by(p_id=p_id).all()
+
+    if (product_details):
+        return product_details
+    else:
+        raise HTTPException(status_code=404,detail="Product Not Found")
+
+
 def get_order(db:Session):
     # return db.query(Order).all()
     # or
     result=db.execute(text("select * from orders order by order_id"))
     return result.fetchall()
+
+def search_order_by_order_id(ord_id:int,db:Session):
+    order_deteils=db.query(Order).filter_by(order_id=ord_id).all()
+
+    if (order_deteils):
+        return order_deteils
+    else:
+        raise HTTPException(status_code=404,detail="Order Not Found")
+
+def search_order_by_cust_id(cust_id:int,db:Session):
+    order_deteils_=db.query(Order).filter_by(cust_id=cust_id).all()
+
+    if(order_deteils_):
+        return order_deteils_
+    else:
+        raise HTTPException(status_code=404,detail="Order Not Found")   
+
 
 def get_order_items(db:Session):
     return db.query(models.OrderItem).all()

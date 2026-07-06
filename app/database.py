@@ -13,10 +13,14 @@ SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
 
 def get_db():
     db=SessionLocal()
+    # print("========== OPEN SESSION ==========")
+    print("✅ Database Session Opened")
     try:
         yield db
     finally:
         db.close()
+        # print("========== CLOSE SESSION ==========")
+        print("❌ Database Session Closed")
 
 
 class Base(DeclarativeBase):
