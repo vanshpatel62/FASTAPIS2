@@ -38,7 +38,13 @@ def update_cust(cust:schemas.customer_data,cust_id:int,db:Session=Depends(get_db
         raise HTTPException(status_code=404,detail="Book Not Found")
     return cust_update
 
-
+@app.delete("/delete_cust/{cust_id}",response_model=schemas.customer_data)
+def delete_cust(cust_id:int,db:Session=Depends(get_db)):
+    delete_entry=services.delet_cust(cust_id,db)
+    if delete_entry:
+        return delete_entry 
+    else:
+        raise HTTPException(status_code=404,detail="Customer Can Not Found")
 
 
 @app.get("/products",response_model=list[schemas.produsts_data])

@@ -37,6 +37,17 @@ def update_cust(cust_id:int,cust:schemas.customer_data,db:Session):
         db.refresh(find_cust)
     return find_cust
 
+def delet_cust(cust_id:int,db:Session):
+
+    delete_cust=db.query(Customer).filter_by(cust_id=cust_id).first()
+    if delete_cust is None:
+        raise HTTPException(status_code=404,detail="Customer Can Not Found")
+        
+    else:
+        db.delete(delete_cust)
+        db.commit()
+        return delete_cust
+
 
 def get_product(db:Session):
     result=db.execute(text("select * from products order by p_id"))
