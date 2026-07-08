@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
+import logging
+logger = logging.getLogger(__name__)
 
 DATABASE_URL = "postgresql+psycopg://postgres:0602@localhost:5432/db1"
 # postgresql+psycopg://:password@host:port/database_name
@@ -15,13 +17,13 @@ SessionLocal = sessionmaker(autocommit=False,autoflush=False,bind=engine)
 def get_db():
     db=SessionLocal()
     # print("========== OPEN SESSION ==========")
-    print("✅ Database Session Opened")
+    logger.info("✅ Database Session Opened")
     try:
         yield db
     finally:
         db.close()
         # print("========== CLOSE SESSION ==========")
-        print("❌ Database Session Closed")
+        logger.info("❌ Database Session Closed")
 
 
 class Base(DeclarativeBase):

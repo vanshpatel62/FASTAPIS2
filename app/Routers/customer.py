@@ -60,39 +60,97 @@ router = APIRouter(
 @router.get("/cust", response_model=list[Schemas.customer_data])
 def get_cust(db: Session = Depends(get_db)):
     try:
-        # logging.info("customre API called")
-        logger.info("    customre API called")
-        # logger.critical("    Application Crashed")
-        return Services.get_customre(db)
+        customers = Services.get_customre(db)
+        logger.info("           Successfully recived %d customers", len(customers))
+        return customers
+        
     except Exception as e:
-        logger.error(f"Database Error : {e}")
-        # raise HTTPException(status_code=500,detail="Error from api side")
+        logger.exception("          Database error while fetching customers")
+        logger.error(f"         Database Error : {e}")
         return {"Message":"Error"}
+    else:
+        logger.info("           get all customer list")
 
 
 @router.get("/cust/{cust_id}", response_model=Schemas.customer_data)
 def search_cust(cust_id: int, db: Session = Depends(get_db)):
-    
-    logger.info("     customre search  API calling.....")
-    return Services.search_customer(cust_id, db)
-    
-    # logger.error(f"Error : {e}")
-    # # raise HTTPException(status_code=500,detail="Error from api side")
-    # return {"Message":"Error"}
+    try:
+        logger.info("Customer search API called")
+        return Services.search_customer(cust_id, db)
 
+    except HTTPException:
+        raise
 
+    except Exception:
+        logger.error("Customer search failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Server Error"
+        )
 
 
 @router.post("/cust", response_model=Schemas.add_customre)
 def create_cust(cust: Schemas.add_customre, db: Session = Depends(get_db)):
-    return Services.create_customre(db, cust)
+    try:
+        logger.info("Create Customer API called")
+        return Services.create_customre(db, cust)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.error("Create Customer API failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Server Error"
+        )
 
 
 @router.put("/cust/{cust_id}", response_model=Schemas.customer_data)
 def update_cust(cust_id: int, cust: Schemas.customer_data, db: Session = Depends(get_db)):
-    return Services.update_cust(cust_id, cust, db)
+    try:
+        logger.info("Update Customer API called ...")
+        return Services.update_cust(cust_id, cust, db)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.error("Update Customer API failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Server Error"
+        )
 
 
 @router.delete("/delete_cust/{cust_id}", response_model=Schemas.customer_data)
 def delete_cust(cust_id: int, db: Session = Depends(get_db)):
-    return Services.delet_cust(cust_id, db)
+    try:
+        logger.info("Delete Customer API called ...")
+        return Services.delet_cust(cust_id, db)
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        logger.error("Delete Customer API failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Server Error"
+        )
+
+
+
+# @router.post("/cust", response_model=Schemas.add_customre)
+# def create_cust(cust: Schemas.add_customre, db: Session = Depends(get_db)):
+#     return Services.create_customre(db, cust)
+
+
+# @router.put("/cust/{cust_id}", response_model=Schemas.customer_data)
+# def update_cust(cust_id: int, cust: Schemas.customer_data, db: Session = Depends(get_db)):
+#     return Services.update_cust(cust_id, cust, db)
+
+
+# @router.delete("/delete_cust/{cust_id}", response_model=Schemas.customer_data)
+# def delete_cust(cust_id: int, db: Session = Depends(get_db)):
+#     return Services.delet_cust(cust_id, db)
