@@ -57,6 +57,18 @@ router = APIRouter(
     tags=["Customer"]
 )
 
+@router.options("/")
+def customer_option():
+    return{
+        "allowed_methods": [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE"
+        ]
+    }
+
+
 @router.get("/cust", response_model=list[Schemas.customer_data])
 def get_cust(db: Session = Depends(get_db)):
     try:

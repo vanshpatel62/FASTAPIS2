@@ -1,4 +1,5 @@
-from fastapi import FastAPI,HTTPException,Depends,Request,APIRouter
+from fastapi import FastAPI,HTTPException,Depends,Request,APIRouter,Header
+# from jose import jwt
 # from fastapi.responses import HTMLResponse
 # from fastapi.staticfiles import StaticFiles
 # from fastapi.templating import Jinja2Templates
@@ -10,12 +11,11 @@ from typing import Union
 from app.database import engine
 # from app.models import Base
 from app.database import Base
-from app.Routers import customer,products,order,order_item,payment
+from app.Routers import customer,products,order,order_item,payment,user
 import logging
 
 # from app.Routers import customer
 # from app import Routers
-
 
 app=FastAPI()
 # router=APIRouter()
@@ -31,6 +31,8 @@ app.include_router(order.router)
 app.include_router(order_item.router)
 
 app.include_router(payment.router)
+
+app.include_router(user.router)
 
 
 
