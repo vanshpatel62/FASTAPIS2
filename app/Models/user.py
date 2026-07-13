@@ -20,3 +20,4 @@ class User(Base):
             name="chk_user_role"
         ),
     )
+

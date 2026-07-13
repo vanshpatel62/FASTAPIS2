@@ -5,7 +5,8 @@ from app import Schemas, Services
 from app.database import get_db
 import logging
 import hashlib
-
+from app.dependencies import get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -51,16 +52,16 @@ def add_user(user_info:Schemas.register_user,db:Session=Depends(get_db)):
             status_code=500,
             detail="Internal Server Error"
         )
-    
 
-@router.post("/login",response_model=Schemas.login)
+@router.post("/login",response_model=Schemas.Token)
 def user_login(data:Schemas.login,db:Session=Depends(get_db)):
 
     try:
         logger.info("Login API called")
-        user = Services.user_login(db, data)
-        logger.info(f"Login API completed successfully | User Name: {user.user_name}")
-        return user
+        token = Services.user_login(db, data)
+        logger.info(f"Login API completed successfully | User Name: {data.user_name}")
+        # return user
+        return token
     except HTTPException:
         raise
     except Exception as e:
@@ -71,7 +72,7 @@ def user_login(data:Schemas.login,db:Session=Depends(get_db)):
         )
 
 @router.delete("/delete_user/{user_id}",response_model=Schemas.get_user)
-def delete_user(user_id:int,db:Session=Depends(get_db)):
+def delete_user(user_id:int,db:Session=Depends(get_db),admin=Depends(Services.get_admin_user)):
     try:
         logger.info(f"Delete Api calling for ID:  {user_id}")
         return Services.delete_user(user_id,db)
@@ -81,3 +82,35 @@ def delete_user(user_id:int,db:Session=Depends(get_db)):
         logger.error("Delete api for user is faild")
         raise HTTPException(status_code=500,detail="Internal server error")
     
+
+
+@router.get(
+    "/search/{user_id}",
+    response_model=Schemas.get_user
+)
+def search_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    return Services.search_user(user_id, db)
+
+
+# @router.get("/userss",response_model=Schemas.get_user)
+# def show_detailss(data=Depends(get_current_user)):
+#     return data
+
+
+# @router.post("/loginn",response_model=Schemas.Token)
+# def user_loginn(data:Schemas.login,db:Session=Depends(get_db)):
+#     return Services.user_login(db,data)
+
+
+
+# @router.get("/profile",response_model=Schemas.get_user)
+# def profile(current_user = Depends(get_current_user)):
+#     return {
+#         "message":"Welcome",
+
+#         "user":current_user
+#     }

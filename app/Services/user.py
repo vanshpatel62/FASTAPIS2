@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException,Depends
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
@@ -7,8 +7,8 @@ from typing import cast
 from app.Models import User
 import logging
 from app import security
-
-
+from app.utils.jwt_handler import create_access_token
+from app.dependencies import get_current_user
 
 
 logging.basicConfig(level=logging.INFO)
@@ -90,11 +90,23 @@ def user_login(db:Session,id_pass:Schemas.login):
 
 
 
-        if not security.varify_password(id_pass.password,cast(str,user_.password)) :
+        if not security.verify_password(id_pass.password,cast(str,user_.password)) :
             logger.warning(f"Login failed - wrong password for : {id_pass.user_name}")
             raise HTTPException(
                 status_code=401,
                 detail="Invalid user name or password")
+        
+        
+        
+        token = create_access_token(
+            {"sub": user_.user_name,
+            "user_id": user_.user_id,
+            "role": user_.role
+                })
+
+        user_.last_log_in = datetime.now()  # type: ignore[assignment]
+        db.commit()
+
         
         # user.last_log_in = datetime.utcnow()
         # user.last_log_in = datetime.now(timezone.utc)
@@ -104,7 +116,11 @@ def user_login(db:Session,id_pass:Schemas.login):
         db.refresh(user_)
 
         logger.info(f"Login successful | User ID: {user_.user_id}")
-        return user_
+        return {
+            "access_token":token,
+            "token_type":"bearer"
+        }
+        # return user_
     
     except HTTPException:
         raise
@@ -147,3 +163,24 @@ def delete_user(user_id:int,db:Session):
         db.rollback()
         logger.error(f"Faild to fatch user")
         raise HTTPException(status_code=500,detail="Faild to Delete user")
+    
+def search_user(user_id: int, db: Session):
+
+    user = db.query(Models.User).filter(
+        Models.User.user_id == user_id
+    ).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    return user
+
+def get_admin_user(current_user=Depends(get_current_user)):
+        
+    if current_user['role']!="admin":
+        raise HTTPException(status_code=403,detail="Only Admin Can Access This API")
+    
+    return current_user

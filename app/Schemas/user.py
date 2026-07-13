@@ -7,7 +7,9 @@ class get_user(BaseModel):
     mobile :str
     password :str
     role:str
-    last_log_in :datetime 
+    last_log_in :datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 class register_user(BaseModel):
     user_name :str
@@ -19,3 +21,7 @@ class register_user(BaseModel):
 class login(BaseModel):
     user_name:str
     password:str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
