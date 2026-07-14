@@ -69,7 +69,7 @@ logger=logging.getLogger(__name__)
 #         return responce
     
 
-white_list=["127.0.0.1","192.168.29.149"]
+white_list=[]
 
 async def ip_whitelist(request:Request,call_next):
     assert request.client is not None
