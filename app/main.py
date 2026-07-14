@@ -13,6 +13,8 @@ from app.database import engine
 from app.database import Base
 from app.Routers import customer,products,order,order_item,payment,user
 import logging
+from fastapi.responses import JSONResponse
+from app.middleware import ip_whitelist,browser_check
 
 # from app.Routers import customer
 # from app import Routers
@@ -34,13 +36,16 @@ app.include_router(payment.router)
 
 app.include_router(user.router)
 
+app.middleware("http")(ip_whitelist)
 
+# app.middleware("http")(browser_check)
 
 """
 # Customer list
 @app.get("/cust",response_model=list[schemas.customer_data])
 def get_cust(db:Session=Depends(get_db)):
     return services.get_customre(db)
+
 
 # Search cudtomer with use id
 @app.get("/cust/{cust_id}",response_model=schemas.customer_data)

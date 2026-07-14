@@ -184,3 +184,4 @@ def get_admin_user(current_user=Depends(get_current_user)):
         raise HTTPException(status_code=403,detail="Only Admin Can Access This API")
     
     return current_user
+

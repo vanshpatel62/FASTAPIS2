@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends,HTTPException
+from fastapi import APIRouter, Depends,HTTPException,Request
+from fastapi.requests import Request
 from sqlalchemy.orm import Session
-
+# import Request
 from app import Schemas, Services
 from app.database import get_db
 import logging
@@ -95,6 +96,12 @@ def search_user(
 ):
     return Services.search_user(user_id, db)
 
+
+@router.get("/my-ip")   
+def my_ip(request: Request):
+    clientt = request.client
+
+    return {"ip": clientt.host} # type: ignore
 
 # @router.get("/userss",response_model=Schemas.get_user)
 # def show_detailss(data=Depends(get_current_user)):
