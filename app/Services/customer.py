@@ -1,10 +1,13 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-
+from typing import cast
 from app import Schemas
 from app.Models import Customer
 import logging
+from app.utils.encryption import encrypt,decrypt
+from app.utils.lookup import encrypt_hash
+# from utils import encryption
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,7 +16,10 @@ def create_customre(db: Session, data: Schemas.add_customre):
     try:
         logger.info("           Creating new Customer...")
 
-        customer_ins = Customer(**data.model_dump())
+        # customer_ins = Customer(**data.model_dump())
+        customer_ins=data.model_dump()
+        customer_ins['email']=encrypt(customer_ins['email'])
+        customer_ins = Customer(**customer_ins)
 
         db.add(customer_ins)
         db.commit()
@@ -23,7 +29,7 @@ def create_customre(db: Session, data: Schemas.add_customre):
             "Customer created successfully | \n |ID: %s \n| Name: %s \n| Email: %s \n| City: %s \n| Join Date: %s",
             customer_ins.cust_id,
             customer_ins.name,
-            customer_ins.email,
+            (customer_ins.email),
             customer_ins.city,
             customer_ins.join_date
             )
@@ -41,6 +47,9 @@ def get_customre(db: Session):
         logger.info("           Fetching all customers from the database ...")
 
         customers = db.query(Customer).all()
+
+        for customer in customers:
+            customer.email = decrypt(customer.email)           
 
         logger.info("           Successfully fetched %d customers", len(customers))
         return customers
@@ -66,6 +75,7 @@ def search_customer(cust_id: int, db: Session):
                 status_code=404,
                 detail="Customer not found"
             )
+        customer.email = decrypt(customer.email)
 
         logger.info(
             "Customer found | \n|ID: %s \n| Name: %s \n| Email: %s \n| City: %s \n| Join Date: %s",
@@ -105,9 +115,7 @@ def update_cust(cust_id: int, cust: Schemas.customer_data, db: Session):
         logger.info("Updating customer with ID: %s", cust_id)
 
         find_cust = db.query(Customer).filter_by(cust_id=cust_id).first()
-
         
-
         if find_cust is None:
             logger.warning("Customer not found with ID: %s", cust_id)
             raise HTTPException(
@@ -126,10 +134,16 @@ def update_cust(cust_id: int, cust: Schemas.customer_data, db: Session):
             "Customer Old Data | \n|ID: %s \n| Name: %s \n| Email: %s \n| City: %s \n| Join Date: %s",
             find_cust.cust_id,
             find_cust.name,
-            find_cust.email,
+            decrypt(find_cust.email),
             find_cust.city,
             find_cust.join_date,
         )
+
+        update_data = cust.model_dump(exclude_unset=True)
+
+        # Encrypt sensitive fields if present
+        if "email" in update_data:
+            update_data["email"] = encrypt(update_data["email"])
 
         for key, value in cust.model_dump().items():
             setattr(find_cust, key, value)
@@ -141,7 +155,7 @@ def update_cust(cust_id: int, cust: Schemas.customer_data, db: Session):
             "Customer Updated Data | \n|ID: %s \n| Name: %s \n| Email: %s \n| City: %s \n| Join Date: %s",
             find_cust.cust_id,
             find_cust.name,
-            find_cust.email,
+            decrypt(find_cust.email),
             find_cust.city,
             find_cust.join_date,
         )
@@ -197,7 +211,7 @@ def delet_cust(cust_id: int, db: Session):
             "Customer found | \n|ID: %s \n| Name: %s \n| Email: %s \n| City: %s \n| Join Date: %s",
             delete_cust.cust_id,
             delete_cust.name,
-            delete_cust.email,
+            decrypt(delete_cust.email),
             delete_cust.city,
             delete_cust.join_date,
         )

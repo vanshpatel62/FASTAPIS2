@@ -69,7 +69,9 @@ logger=logging.getLogger(__name__)
 #         return responce
     
 
-white_list=[]
+# white_list=["192.168.29.149","127.0.0.1"]
+white_list=["127.0.0.1"]
+
 
 async def ip_whitelist(request:Request,call_next):
     assert request.client is not None
@@ -79,7 +81,7 @@ async def ip_whitelist(request:Request,call_next):
     user_agent = request.headers.get("User-Agent", "")
 
 
-    if (client_ip not in white_list and "Chrome" not in user_agent) :
+    if (client_ip not in white_list) :
             return JSONResponse(
                 status_code=403,
                 content={

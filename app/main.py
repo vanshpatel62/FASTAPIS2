@@ -11,13 +11,11 @@ from typing import Union
 from app.database import engine
 # from app.models import Base
 from app.database import Base
-from app.Routers import customer,products,order,order_item,payment,user
+from app.Routers import customer,products,order,order_item,payment,user,document
 import logging
 from fastapi.responses import JSONResponse
 from app.middleware import ip_whitelist,browser_check
 
-# from app.Routers import customer
-# from app import Routers
 
 app=FastAPI()
 # router=APIRouter()
@@ -35,6 +33,7 @@ app.include_router(order_item.router)
 app.include_router(payment.router)
 
 app.include_router(user.router)
+app.include_router(document.router)
 
 app.middleware("http")(ip_whitelist)
 
